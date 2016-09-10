@@ -4,7 +4,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,7 +19,7 @@ public class Main {
     private static final Logger logger = LogManager.getLogger(Main.class.getName());
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        int port = 5050;
+/*        int port = 5050;
         ExecutorService executor = Executors.newFixedThreadPool(CLIENTS_NUMBER);
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             logger.info("Server started");
@@ -24,6 +27,16 @@ public class Main {
             long startTime = new Date().getTime();
             while (new Date().getTime() < startTime + TIME_TO_WORK) {
                 executor.submit(new MessageProcessor(serverSocket.accept()));
+            }
+        }*/
+
+        ExecutorService executor = Executors.newFixedThreadPool(CLIENTS_NUMBER);
+        try(ServerSocketChannel serverSocketChannel = ServerSocketChannel.open()) {
+            serverSocketChannel.socket().bind(new InetSocketAddress(5050));
+            logger.info("Server started");
+            long startTime = new Date().getTime();
+            while (new Date().getTime() < startTime + TIME_TO_WORK) {
+                executor.submit(new MessageNioProcessor(serverSocketChannel.accept()));
             }
         }
     }
